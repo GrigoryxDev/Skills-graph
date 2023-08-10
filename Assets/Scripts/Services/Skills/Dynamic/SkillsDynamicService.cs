@@ -118,7 +118,6 @@ public class SkillsDynamicService : ISkillsDynamicService
 
     public void Forget(int skillId)
     {
-        //TODO: test forget for 2 linked
         if (TryGetSkillData(skillId, out var forgetSkillData))
         {
             userSkillsModel.LearnedSkills.Remove(skillId);
@@ -162,7 +161,6 @@ public class SkillsDynamicService : ISkillsDynamicService
     {
         if (TryGetSkillData(skillId, out var learnSkillData))
         {
-            //TODO: test learned skill aded to storage
             userSkillsModel.LearnedSkills.Add(skillId);
             spendEarnService.Spend(ItemTypes.SkillPoint, learnSkillData.GetStaticData.Price);
 

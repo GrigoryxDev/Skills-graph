@@ -39,7 +39,6 @@ public class SkillsPanel : BaseSkillScreenElement
         }
     }
 
-    //TODO: Implemented special test: All elements could be placed 
     public override void OnInit(SkillsScreenModel model)
     {
         UpdateAllSkillUis();
