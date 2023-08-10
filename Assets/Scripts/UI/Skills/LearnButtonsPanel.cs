@@ -32,6 +32,10 @@ public class LearnButtonsPanel : BaseSkillScreenElement
 
     public override void OnUpdateSkillPoints()
     {
+        if (model.Selected == null)
+        {
+            return;
+        }
         learn.interactable = skillsDynamicService.CouldBeLearned(model.Selected.SkillId);
         forget.interactable = skillsDynamicService.CouldBeForget(model.Selected.SkillId);
     }
