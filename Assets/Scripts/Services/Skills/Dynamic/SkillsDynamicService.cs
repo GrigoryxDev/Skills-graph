@@ -23,11 +23,20 @@ public class SkillsDynamicService : ISkillsDynamicService
 
     public void Init()
     {
-        Reset();
+        modelWorker.CreateNewDynamicDict();
     }
 
     public void Reset()
     {
+        foreach (var item in skillsModel.dynamicSkills)
+        {
+            var skill = item.Value;
+            if (skill.State == SkillDynamicState.Learned)
+            {
+                spendEarnService.Earn(ItemTypes.SkillPoint, skill.GetStaticData.Price);
+            }
+        }
+        
         modelWorker.CreateNewDynamicDict();
     }
 

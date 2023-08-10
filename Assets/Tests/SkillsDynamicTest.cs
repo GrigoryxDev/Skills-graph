@@ -63,6 +63,26 @@ public class SkillsDynamicTest
     }
 
     [Test]
+    public void TestResetAll()
+    {
+        //Arrange test
+        var (userStorageService, skillsDynamicService, skillsStaticService) = GetServices();
+        var skillDta = userStorageService.GetSkillsData();
+        const int testSkillsPoints = 10;
+        skillDta.SkillPoints.Value = testSkillsPoints;
+
+        //Act test
+        skillsDynamicService.Learn(4);
+        skillsDynamicService.Learn(5);
+        skillsDynamicService.Learn(7);
+
+        skillsDynamicService.Reset();
+
+        //Assert test
+        Assert.AreEqual(testSkillsPoints, skillDta.SkillPoints.Value);
+    }
+
+    [Test]
     public void TestTryForgetWithTwoSideLinkedLearn()
     {
         //Arrange test
