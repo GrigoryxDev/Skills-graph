@@ -58,25 +58,11 @@ public class SkillsDynamicService : ISkillsDynamicService
                 else
                 {
                     forgetSkill.ChangeState(SkillDynamicState.NotLearned);
-                    
-                    //Check that linked learned skills connect with any base 
-                    foreach (var forgetLinkedId in forgetSkill.GetStaticData.Linked)
-                    {
-                        if (TryGetSkillData(forgetLinkedId, out SkillDynamicData forgetLinkedSkill))
-                        {
-                            if (forgetLinkedId != forgetSkill.GetStaticData.ID && forgetLinkedSkill.IsLearned())
-                            {
-                                if (!IsLearnedElementLinkedWithBase(forgetLinkedSkill))
-                                {
-                                    forgetSkill.ChangeState(SkillDynamicState.Learned);
-                                    return false;
-                                }
-                            }
-                        }
-                    }
+
+                    var isAllStayLinked = CheckLForgetLinked(forgetSkill);
 
                     forgetSkill.ChangeState(SkillDynamicState.Learned);
-                    return true;
+                    return isAllStayLinked;
                 }
             }
         }
@@ -84,8 +70,32 @@ public class SkillsDynamicService : ISkillsDynamicService
         return false;
     }
 
+    private bool CheckLForgetLinked(SkillDynamicData forgetSkill)
+    {
+        //Check that linked learned skills connect with any base 
+        foreach (var forgetLinkedId in forgetSkill.GetStaticData.Linked)
+        {
+            if (TryGetSkillData(forgetLinkedId, out SkillDynamicData forgetLinkedSkill))
+            {
+                if (forgetLinkedId != forgetSkill.GetStaticData.ID && forgetLinkedSkill.IsLearned())
+                {
+                    if (!IsLearnedElementLinkedWithBase(forgetLinkedSkill))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private bool IsLearnedElementLinkedWithBase(SkillDynamicData forgetLinkedSkill)
     {
+        //Algorithm processes vertices in all directions, 
+        //it is very slow at large distances and graphs with strong branching.
+        //Modify the standard breadth-first search: 
+        //use sortable queue based on a an approximate estimate of the expected path
+
         var currentSkills = new Queue<SkillDynamicData>();
         var visited = new HashSet<SkillDynamicData>();
 
@@ -124,16 +134,20 @@ public class SkillsDynamicService : ISkillsDynamicService
             spendEarnService.Earn(ItemTypes.SkillPoint, forgetSkillData.GetStaticData.Price);
 
             forgetSkillData.ChangeState(SkillDynamicState.CouldBeLearn);
+            CheckForgetLinked(forgetSkillData);
+        }
+    }
 
-            foreach (var item in forgetSkillData.GetStaticData.Linked)
+    private void CheckForgetLinked(SkillDynamicData forgetSkillData)
+    {
+        foreach (var item in forgetSkillData.GetStaticData.Linked)
+        {
+            if (TryGetSkillData(item, out var linkedSkill))
             {
-                if (TryGetSkillData(item, out var linkedSkill))
+                if (linkedSkill.State == SkillDynamicState.CouldBeLearn &&
+                !IsAnyLearnedLinked(linkedSkill, out _))
                 {
-                    if (linkedSkill.State == SkillDynamicState.CouldBeLearn &&
-                    !IsAnyLearnedLinked(linkedSkill, out _))
-                    {
-                        linkedSkill.ChangeState(SkillDynamicState.NotLearned);
-                    }
+                    linkedSkill.ChangeState(SkillDynamicState.NotLearned);
                 }
             }
         }
@@ -166,14 +180,19 @@ public class SkillsDynamicService : ISkillsDynamicService
 
             learnSkillData.ChangeState(SkillDynamicState.Learned);
 
-            foreach (var item in learnSkillData.GetStaticData.Linked)
+            CheckLearnLinked(learnSkillData);
+        }
+    }
+
+    private void CheckLearnLinked(SkillDynamicData learnSkillData)
+    {
+        foreach (var item in learnSkillData.GetStaticData.Linked)
+        {
+            if (TryGetSkillData(item, out var linkedSkill))
             {
-                if (TryGetSkillData(item, out var linkedSkill))
+                if (linkedSkill.State == SkillDynamicState.NotLearned)
                 {
-                    if (linkedSkill.State == SkillDynamicState.NotLearned)
-                    {
-                        linkedSkill.ChangeState(SkillDynamicState.CouldBeLearn);
-                    }
+                    linkedSkill.ChangeState(SkillDynamicState.CouldBeLearn);
                 }
             }
         }
