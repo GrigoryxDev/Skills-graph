@@ -2,7 +2,7 @@
 using UnityEngine;
 using Zenject;
 
-public class SkillsPanel : BaseSkillScreenElement
+public class SkillsPanel : BaseSkillScreenElement, ISkillScreenLearnUpdate
 {
     private ISkillsDynamicService skillsDynamicService;
 
@@ -71,27 +71,12 @@ public class SkillsPanel : BaseSkillScreenElement
         UpdateAllSkillUis();
     }
 
-    public override void OnUpdateSkillPoints()
-    {
-        return;
-    }
-
-    public override void OnSelect(SkillUiElement skillUiElement)
-    {
-        return;
-    }
-
-    public override void OnDeSelect()
-    {
-        return;
-    }
-
-    public override void OnLearn(SkillUiElement skillUiElement)
+    public void OnLearn(SkillUiElement skillUiElement)
     {
         TryUpdateColor(skillUiElement);
     }
 
-    public override void OnForget(SkillUiElement skillUiElement)
+    public void OnForget(SkillUiElement skillUiElement)
     {
         TryUpdateColor(skillUiElement);
     }

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using Zenject;
 using UniRx;
 
-public class SkillPointsPanel : BaseSkillScreenElement
+public class SkillPointsPanel : BaseSkillScreenElement, ISkillScreenSelectUpdate
 {
     private ISpendEarnService spendEarnService;
     private IUserStorageService userStorageService;
@@ -51,7 +51,7 @@ public class SkillPointsPanel : BaseSkillScreenElement
         UpdatePrice(0);
     }
 
-    public override void OnSelect(SkillUiElement skillUiElement)
+    public void OnSelect(SkillUiElement skillUiElement)
     {
         if (skillsStaticService.TryGetStaticSkill(skillUiElement.SkillId, out var skill))
         {
@@ -59,28 +59,13 @@ public class SkillPointsPanel : BaseSkillScreenElement
         }
     }
 
-    public override void OnDeSelect()
+    public void OnDeSelect()
     {
         UpdatePrice(0);
-    }
-
-    public override void OnLearn(SkillUiElement skillUiElement)
-    {
-        return;
-    }
-
-    public override void OnForget(SkillUiElement skillUiElement)
-    {
-        return;
     }
 
     private void UpdatePrice(int price)
     {
         priceText.text = $"Price: <color=red><b>{price}";
-    }
-
-    public override void OnUpdateSkillPoints()
-    {
-        return;
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-public class LearnButtonsPanel : BaseSkillScreenElement
+public class LearnButtonsPanel : BaseSkillScreenElement, ISkillScreenLearnUpdate, ISkillScreenSelectUpdate, ISkillScreenPointsUpdate
 {
     private ISkillsDynamicService skillsDynamicService;
 
@@ -30,7 +30,7 @@ public class LearnButtonsPanel : BaseSkillScreenElement
         ActiveButtons(false, false);
     }
 
-    public override void OnUpdateSkillPoints()
+    public void OnUpdateSkillPoints()
     {
         if (model.Selected == null)
         {
@@ -40,17 +40,17 @@ public class LearnButtonsPanel : BaseSkillScreenElement
         forget.interactable = skillsDynamicService.CouldBeForget(model.Selected.SkillId);
     }
 
-    public override void OnDeSelect()
+    public void OnDeSelect()
     {
         ActiveButtons(false, false);
     }
 
-    public override void OnForget(SkillUiElement skillUiElement)
+    public void OnForget(SkillUiElement skillUiElement)
     {
         ActiveButtons(true, false);
     }
 
-    public override void OnLearn(SkillUiElement skillUiElement)
+    public void OnLearn(SkillUiElement skillUiElement)
     {
         ActiveButtons(false, true);
     }
@@ -60,7 +60,7 @@ public class LearnButtonsPanel : BaseSkillScreenElement
         ActiveButtons(false, false);
     }
 
-    public override void OnSelect(SkillUiElement skillUiElement)
+    public void OnSelect(SkillUiElement skillUiElement)
     {
         learn.interactable = skillsDynamicService.CouldBeLearned(skillUiElement.SkillId);
         forget.interactable = skillsDynamicService.CouldBeForget(skillUiElement.SkillId);

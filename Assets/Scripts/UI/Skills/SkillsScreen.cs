@@ -11,10 +11,14 @@ public class SkillsScreen : MonoBehaviour
     private ISkillsDynamicService skillsDynamicService;
 
     [SerializeField] private Button resetAll;
-
     [SerializeField] private BaseSkillScreenElement[] skillScreenPart;
 
     private readonly SkillsScreenModel model = new();
+
+    private List<ISkillScreenLearnUpdate> skillScreenLearnUpdates;
+    private List<ISkillScreenPointsUpdate> skillScreenPointsUpdates;
+    private List<ISkillScreenSelectUpdate> skillScreenSelectUpdates;
+
 
     [Inject]
     private void Constructor(IResetService resetService,
@@ -26,31 +30,36 @@ public class SkillsScreen : MonoBehaviour
 
     public void Init()
     {
-        PrepareModel();
+        PrepareData();
         InitButtons();
 
+        InitScreenParts();
+    }
+
+    private void InitScreenParts()
+    {
         foreach (var element in skillScreenPart)
         {
-            element.Init(model);
+            InitScreenPart(element);
         }
     }
 
-    private void PrepareModel()
+    private void InitScreenPart(BaseSkillScreenElement element)
     {
-        model.OnSelect += OnSelect;
-        model.OnDeselect += OnDeSelect;
-
-        model.OnLearn += OnLearn;
-        model.OnForget += OnForget;
-
-        model.OnUpdateSkillPoints += OnUpdateSkillPoints;
-    }
-
-    private void OnUpdateSkillPoints()
-    {
-        foreach (var element in skillScreenPart)
+        element.Init(model);
+        if (element.TryGetComponent<ISkillScreenLearnUpdate>(out var learn))
         {
-            element.OnUpdateSkillPoints();
+            skillScreenLearnUpdates.Add(learn);
+        }
+
+        if (element.TryGetComponent<ISkillScreenPointsUpdate>(out var pointsUpdate))
+        {
+            skillScreenPointsUpdates.Add(pointsUpdate);
+        }
+
+        if (element.TryGetComponent<ISkillScreenSelectUpdate>(out var selectUpdate))
+        {
+            skillScreenSelectUpdates.Add(selectUpdate);
         }
     }
 
@@ -69,11 +78,39 @@ public class SkillsScreen : MonoBehaviour
         }
     }
 
+    private void PrepareData()
+    {
+        PrepareSkillPartGroups();
+
+        model.OnSelect += OnSelect;
+        model.OnDeselect += OnDeSelect;
+
+        model.OnLearn += OnLearn;
+        model.OnForget += OnForget;
+
+        model.OnUpdateSkillPoints += OnUpdateSkillPoints;
+    }
+
+    private void PrepareSkillPartGroups()
+    {
+        skillScreenLearnUpdates = new List<ISkillScreenLearnUpdate>();
+        skillScreenPointsUpdates = new List<ISkillScreenPointsUpdate>();
+        skillScreenSelectUpdates = new List<ISkillScreenSelectUpdate>();
+    }
+
+    private void OnUpdateSkillPoints()
+    {
+        foreach (var element in skillScreenPointsUpdates)
+        {
+            element.OnUpdateSkillPoints();
+        }
+    }
+
     private void OnLearn(SkillUiElement skillUiElement)
     {
         skillsDynamicService.Learn(model.Selected.SkillId);
 
-        foreach (var element in skillScreenPart)
+        foreach (var element in skillScreenLearnUpdates)
         {
             element.OnLearn(skillUiElement);
         }
@@ -82,7 +119,7 @@ public class SkillsScreen : MonoBehaviour
     private void OnForget(SkillUiElement skillUiElement)
     {
         skillsDynamicService.Forget(model.Selected.SkillId);
-        foreach (var element in skillScreenPart)
+        foreach (var element in skillScreenLearnUpdates)
         {
             element.OnForget(skillUiElement);
         }
@@ -90,7 +127,7 @@ public class SkillsScreen : MonoBehaviour
 
     private void OnSelect(SkillUiElement skillUiElement)
     {
-        foreach (var element in skillScreenPart)
+        foreach (var element in skillScreenSelectUpdates)
         {
             element.OnSelect(skillUiElement);
         }
@@ -98,7 +135,7 @@ public class SkillsScreen : MonoBehaviour
 
     private void OnDeSelect()
     {
-        foreach (var element in skillScreenPart)
+        foreach (var element in skillScreenSelectUpdates)
         {
             element.OnDeSelect();
         }
