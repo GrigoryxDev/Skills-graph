@@ -26,12 +26,12 @@ public class SkillsPanel : BaseSkillScreenElement, ISkillScreenLearnUpdate
                 {
                     model.Selected.ShowSelect(false);
                     model.OnDeselect?.Invoke();
-                    model.Selected = null;
+                    model.SetSkillUiElement(null);
                 }
                 else
                 {
                     model.Selected?.ShowSelect(false);
-                    model.Selected = spawnedElement;
+                    model.SetSkillUiElement(spawnedElement);
                     model.Selected.ShowSelect(true);
                     model.OnSelect(spawnedElement);
                 }
@@ -68,6 +68,7 @@ public class SkillsPanel : BaseSkillScreenElement, ISkillScreenLearnUpdate
 
     public override void OnReset()
     {
+        model.SetSkillUiElement(null);
         UpdateAllSkillUis();
     }
 
